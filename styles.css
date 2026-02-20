@@ -1,0 +1,94 @@
+:root {
+  --bg: #0b1220;
+  --card: #121b2f;
+  --text: #ecf1ff;
+  --muted: #aeb8d5;
+  --accent: #4a8dff;
+  --danger: #ff6b6b;
+  --good: #42d392;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #070b14 0%, #0b1220 100%);
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(8, 13, 24, 0.9);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid #22304f;
+}
+.topbar h1 { margin: 0; font-size: 1.2rem; }
+.topbar-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.card {
+  background: var(--card);
+  border: 1px solid #243459;
+  border-radius: 14px;
+  padding: 1rem;
+}
+h2 { margin-top: 0; font-size: 1rem; color: #ced8f7; }
+.grid { display: grid; gap: .75rem; }
+.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+label {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  font-size: .9rem;
+  color: var(--muted);
+}
+input, select, button {
+  border: 1px solid #3a4f82;
+  background: #0e1628;
+  color: var(--text);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+}
+button { cursor: pointer; }
+.primary { background: var(--accent); border-color: #7ba8ff; color: white; }
+.sticky-actions { display: flex; gap: .75rem; position: sticky; bottom: 0.5rem; }
+.summary {
+  background: #0d172a;
+  border: 1px solid #263a65;
+  padding: .8rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+.chart-wrap { overflow-x: auto; }
+canvas {
+  width: 100%;
+  min-height: 220px;
+  background: #0d172a;
+  border: 1px solid #2a3f6d;
+  border-radius: 8px;
+}
+.log { margin: 0; padding-left: 1rem; }
+.log li { margin: .3rem 0; color: #cfdaff; }
+
+@media (max-width: 900px) {
+  .three-col { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .topbar { flex-direction: column; align-items: flex-start; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .sticky-actions { position: static; }
+  button { min-height: 44px; }
+  input, select { min-height: 44px; }
+}

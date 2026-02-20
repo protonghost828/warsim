@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Warfare Simulator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Modern Warfare Simulator</h1>
+      <div class="topbar-actions">
+        <button id="randomizeBtn">Randomize Scenario</button>
+        <button id="saveBtn">Save</button>
+        <button id="loadBtn">Load</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card">
+        <h2>Battle Setup</h2>
+        <div class="grid two-col">
+          <label>Turns
+            <input id="turns" type="number" min="1" max="50" value="12" />
+          </label>
+          <label>Terrain
+            <select id="terrain">
+              <option>Urban</option>
+              <option selected>Open</option>
+              <option>Forest</option>
+              <option>Desert</option>
+              <option>Mountain</option>
+              <option>Coastal</option>
+            </select>
+          </label>
+          <label>Weather
+            <select id="weather">
+              <option selected>Clear</option>
+              <option>Rain</option>
+              <option>Storm</option>
+              <option>Snow</option>
+              <option>Sandstorm</option>
+            </select>
+          </label>
+          <label>Civilian Presence
+            <input id="civilians" type="range" min="0" max="100" value="20" />
+          </label>
+          <label>Escalation Risk
+            <input id="escalation" type="range" min="0" max="100" value="15" />
+          </label>
+          <label>Logistics Pressure
+            <input id="logisticsPressure" type="range" min="0" max="100" value="30" />
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Blue Coalition</h2>
+        <div class="grid three-col" id="blueInputs"></div>
+      </section>
+
+      <section class="card">
+        <h2>Red Front</h2>
+        <div class="grid three-col" id="redInputs"></div>
+      </section>
+
+      <section class="card">
+        <h2>Operations & Advanced Options</h2>
+        <div class="grid two-col">
+          <label><input id="useCyber" type="checkbox" checked /> Enable Cyber Operations</label>
+          <label><input id="useSatIntel" type="checkbox" checked /> Enable Satellite Intel</label>
+          <label><input id="useSpecialForces" type="checkbox" checked /> Enable Special Forces Raids</label>
+          <label><input id="useAirCampaign" type="checkbox" checked /> Enable Air Campaign</label>
+        </div>
+      </section>
+
+      <section class="card sticky-actions">
+        <button id="runBtn" class="primary">Run Simulation</button>
+        <button id="resetBtn">Reset Defaults</button>
+      </section>
+
+      <section class="card">
+        <h2>Outcome</h2>
+        <div id="summary" class="summary">Run the simulation to see results.</div>
+        <div class="chart-wrap">
+          <canvas id="battleChart" width="900" height="300"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Turn-by-Turn Log</h2>
+        <ul id="battleLog" class="log"></ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
