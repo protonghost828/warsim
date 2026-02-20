@@ -58,23 +58,43 @@ class Force:
         ew = sum(u.count * u.electronic_warfare for u in self.units)
         ad = sum(u.count * u.air_defense for u in self.units)
         mobility = sum(u.count * u.mobility for u in self.units)
+        personnel = sum(u.count for u in self.units)
         return {
             "combat": combat * self.morale,
             "armor": armor,
             "ew": ew,
             "air_defense": ad,
             "mobility": mobility,
-            "personnel": sum(u.count for u in self.units),
+            "personnel": personnel,
         }
 
     def apply_losses(self, losses: int) -> None:
-        remaining = losses
+        if losses <= 0:
+            return
+
+        total = sum(u.count for u in self.units)
+        if total <= 0:
+            return
+
+        # Distribute losses proportionally to unit size, then consume remainder.
+        applied = 0
+        for unit in self.units:
+            if unit.count <= 0:
+                continue
+            take = min(unit.count, int(losses * (unit.count / total)))
+            unit.count -= take
+            applied += take
+
+        remaining = max(0, losses - applied)
         for unit in sorted(self.units, key=lambda u: u.count, reverse=True):
             if remaining <= 0:
                 break
+            if unit.count <= 0:
+                continue
             take = min(unit.count, remaining)
             unit.count -= take
             remaining -= take
+
         self.morale = max(0.45, self.morale - losses / 12000)
 
 
@@ -84,6 +104,15 @@ class BattleConfig:
     terrain: Terrain = Terrain.OPEN
     weather_penalty: float = 0.0
     civilian_presence: float = 0.1
+
+
+@dataclass
+class BattleTurn:
+    turn: int
+    blue_losses_inflicted: int
+    red_losses_inflicted: int
+    blue_remaining: int
+    red_remaining: int
 
 
 class ModernWarfareSimulator:
@@ -109,8 +138,16 @@ class ModernWarfareSimulator:
         air_survival = (own["air_defense"] + 1.0) / (enemy["air_defense"] + 1.0)
         return offense * ew_edge * intel_edge * (0.85 + 0.15 * mobility_edge) * (0.9 + 0.1 * air_survival)
 
+    def _compute_protection(self, force_snapshot: Dict[str, float], doctrine: str) -> float:
+        d = self._doctrine_mod(doctrine)
+        armor_factor = 1.0 + force_snapshot["armor"] / max(1.0, force_snapshot["personnel"] * 8)
+        ad_factor = 1.0 + force_snapshot["air_defense"] / max(1.0, force_snapshot["personnel"] * 15)
+        return d["defense"] * armor_factor * ad_factor
+
     def simulate(self, blue: Force, red: Force, cfg: BattleConfig) -> Dict[str, object]:
         log: List[str] = []
+        turns: List[BattleTurn] = []
+
         for turn in range(1, cfg.turns + 1):
             b = blue.aggregate(cfg.terrain)
             r = red.aggregate(cfg.terrain)
@@ -118,12 +155,15 @@ class ModernWarfareSimulator:
             b_eff = self._compute_effectiveness(b, r, blue.doctrine, blue.intel_quality)
             r_eff = self._compute_effectiveness(r, b, red.doctrine, red.intel_quality)
 
-            weather_effect = 1.0 - cfg.weather_penalty
-            civilian_constraint = 1.0 - cfg.civilian_presence * 0.2
+            b_protection = self._compute_protection(b, blue.doctrine)
+            r_protection = self._compute_protection(r, red.doctrine)
+
+            weather_effect = max(0.5, 1.0 - cfg.weather_penalty)
+            civilian_constraint = max(0.6, 1.0 - cfg.civilian_presence * 0.2)
             chaos = self.random.uniform(0.9, 1.1)
 
-            b_damage = int(max(0, b_eff / 170 * weather_effect * civilian_constraint * chaos))
-            r_damage = int(max(0, r_eff / 170 * weather_effect * civilian_constraint * chaos))
+            b_damage = int(max(0, b_eff / max(1.0, r_protection) / 170 * weather_effect * civilian_constraint * chaos))
+            r_damage = int(max(0, r_eff / max(1.0, b_protection) / 170 * weather_effect * civilian_constraint * chaos))
 
             red.apply_losses(b_damage)
             blue.apply_losses(r_damage)
@@ -131,12 +171,24 @@ class ModernWarfareSimulator:
             blue.supply_level = max(0.35, blue.supply_level - 0.03)
             red.supply_level = max(0.35, red.supply_level - 0.03)
 
-            log.append(
-                f"Turn {turn}: Blue inflicted {b_damage} losses, Red inflicted {r_damage} losses. "
-                f"Remaining - Blue: {sum(u.count for u in blue.units)}, Red: {sum(u.count for u in red.units)}"
+            blue_remaining = sum(u.count for u in blue.units)
+            red_remaining = sum(u.count for u in red.units)
+            turns.append(
+                BattleTurn(
+                    turn=turn,
+                    blue_losses_inflicted=b_damage,
+                    red_losses_inflicted=r_damage,
+                    blue_remaining=blue_remaining,
+                    red_remaining=red_remaining,
+                )
             )
 
-            if sum(u.count for u in blue.units) <= 0 or sum(u.count for u in red.units) <= 0:
+            log.append(
+                f"Turn {turn}: Blue inflicted {b_damage} losses, Red inflicted {r_damage} losses. "
+                f"Remaining - Blue: {blue_remaining}, Red: {red_remaining}"
+            )
+
+            if blue_remaining <= 0 or red_remaining <= 0:
                 break
 
         blue_remaining = sum(u.count for u in blue.units)
@@ -153,6 +205,7 @@ class ModernWarfareSimulator:
             "red_remaining": red_remaining,
             "turns_fought": len(log),
             "battle_log": log,
+            "turn_summaries": [t.__dict__ for t in turns],
         }
 
 
