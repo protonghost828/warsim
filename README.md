@@ -1,21 +1,26 @@
-# Modern Warfare Simulator
+# Modern Warfare Simulator (HTML + Mobile)
 
-A lightweight Python simulation that models contemporary combined-arms warfare between two forces.
+This project is now a **mobile-friendly web app** for simulating modern combined-arms warfare in the browser.
 
-## Features
-- Unit roles: infantry, armor, artillery, and drone formations.
-- Terrain effects that favor different unit roles.
-- Doctrine effects (`maneuver`, `attrition`, `network-centric`) including defensive posture impact.
-- Electronic warfare, air-defense, mobility, morale, and supply/logistics modeling.
-- Proportional loss distribution across unit types instead of only largest-unit depletion.
-- Turn-based battle log with deterministic seeding support and structured per-turn summaries.
+## What’s new
+- Rewritten from CLI Python to **HTML/CSS/JavaScript** app UI.
+- **Responsive mobile support** with touch-friendly controls and breakpoints.
+- Expanded unit model:
+  - infantry, armor, artillery, drones, aircraft, naval, missiles, EW, air defense.
+- Expanded scenario controls:
+  - terrain, weather, civilians, escalation risk, logistics pressure.
+- Advanced operations toggles:
+  - cyber ops, satellite intel, special forces raids, air campaign.
+- New UX capabilities:
+  - randomize scenario, save/load scenario (localStorage), reset defaults.
+- Result visualization:
+  - winner summary, turn log, and personnel trend chart.
 
-## Run
+## Run locally
+Open `index.html` directly in a browser, or serve the folder:
+
 ```bash
-python modern_warfare_sim.py
+python -m http.server 8000
 ```
 
-## Test
-```bash
-pytest -q
-```
+Then visit `http://localhost:8000`.
